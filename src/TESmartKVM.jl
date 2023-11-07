@@ -47,10 +47,11 @@ function Base.getproperty(c::TCPConnection, s::Symbol)
     if s === :input
         reply = rpc!(c, (0xAA, 0xBB, 0x03, 0x10, 0x00, 0xEE))
         @assert reply[1:4] == (0xaa, 0xbb, 0x03, 0x11)
-        @assert reply[6] == 0x16
+        active_input = reply[5]
+        @assert reply[6] == 0x16 + active_input
         # The read is zero-indexed in the protocol. For consistency, both with
         # julia and the labeling on the device, we use 1 indexing everywhere
-        return reply[5] + 1
+        return active_input + 0x01
     elseif s === :muted
         error("We do not know how to query this")
     elseif s === :ip
